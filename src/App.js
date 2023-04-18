@@ -5,24 +5,56 @@ import jsPDF from "jspdf";
 function App() {
   const [formName, setFormName] = useState("");
   const [formDate, setFormDate] = useState("");
-  const [formImage, setFormImage] = useState("");
-  const [formImages, setFormImages] = useState([]);
-  const [formImageName, setFormImageName] = useState("");
   const [formComment, setFormComment] = useState("");
-  const [formImageWidth, setFormImageWidth] = useState("");
-  const [formImageHeight, setFormImageHeight] = useState("");
+
+  // const [formImage, setFormImage] = useState("");
+  const [formImages, setFormImages] = useState([]);
+  // const [formImageName, setFormImageName] = useState("");
+  // const [formImageWidth, setFormImageWidth] = useState("");
+  // const [formImageHeight, setFormImageHeight] = useState("");
 
   const onImageChange = (event) => {
-    if (event.target.files && event.target.files[0]) {
-      console.log(event.target.files[0]);
-      setFormImageName(event.target.files[0].name);
-      setFormImage(URL.createObjectURL(event.target.files[0]));
-      //new version
-      let newImage = { filename: event.target.files[0].name, filewidth: "5px" };
-      setFormImages([...formImages, newImage]);
-      console.log(formImages[1].filewidth);
+    // console.log(event.target.files)
 
+    //loop through images
+    let fileList = event.target.files;
+    for (var i = 0; i < fileList.length; i++) {
+        // create object for each image and set it 
+        let imageObject = {};
+        imageObject.fileName = fileList[i].name;
+        imageObject.fileURL = URL.createObjectURL(fileList[i]);
+
+        //find image height and width
+        var image = new Image();
+        image.src = imageObject.fileURL;
+        image.onload = function () {
+          const height = this.height;
+          const width = this.width;
+          if (height > 150) {
+            const ratio = width / 150;
+            let newHeight = height / ratio;
+            let newWidth = width / ratio;
+            // console.log("adjusted for width: " + newWidth + "/" + newHeight);
+            imageObject.FormImageWidth = newWidth;
+            imageObject.FormImageHeight = newHeight;
+          }else{
+            // console.log("width: " + width + ", height: " + height);
+            imageObject.FormImageWidth = width;
+            imageObject.FormImageHeight = height;
+          }
+        };
+        console.log("imageObject", imageObject);
+        // setFormImages([...formImages, imageObject]);
+        setFormImages(oldArray => [...formImages, imageObject]);
     }
+      // console.log(event.target.files[0]);
+      // setFormImageName(event.target.files[0].name);
+      // setFormImage(URL.createObjectURL(event.target.files[0]));
+      // //new version
+      // let newImage = { filename: event.target.files[0].name, filewidth: "5px" };
+      // setFormImages([...formImages, newImage]);
+      // console.log(formImages[1].filewidth);
+      console.log({formImages})
   };
 
   function createPDF(e) {
@@ -32,7 +64,8 @@ function App() {
     doc.text(formDate, 10, 20);
     doc.text(formComment, 10, 30);
     doc.addPage("a4", "0");
-    doc.addImage(formImage, 10, 10, formImageWidth, formImageHeight);
+    
+    // doc.addImage(formImage, 10, 10, formImageWidth, formImageHeight);
     console.log("submitting");
     doc.save("a4.pdf");
   }
@@ -82,7 +115,7 @@ function App() {
             <label htmlFor="file">Upload billede</label>
             <input onChange={onImageChange} type="file" id="file" name="file" accept="image/*,.pdf" multiple></input>
           </div>
-          <div className="ImageNameList">{formImageName}</div>
+          <div className="ImageNameList">file</div>
           <input className="SaveButton" type="submit" value="Save PDF" />
           {/* <button type="submit">Save PDF</button> */}
         </form>
@@ -94,7 +127,7 @@ function App() {
 
           
 
-          <img
+          {/* <img
             onLoad={(e) => {
               if (e.target.width > 150) {
                 let ratio = e.target.width / 150;
@@ -118,7 +151,7 @@ function App() {
             }}
             src={formImage}
             alt=""
-          />
+          /> */}
         </section>
       </div>
     </div>
